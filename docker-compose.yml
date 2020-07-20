@@ -11,23 +11,29 @@ services:
         command: bash -c 'start-master.sh && tail -f /dev/null'
         container_name: spark-master
         environment:
-            - SPARK_CONF_DIR=/conf
+            - 'SPARK_MASTER:${SPARK_MASTER}'
+            - 'SPARK_CONF_DIR:${SPARK_CONF_DIR}'
+            - 'SPARK_PUBLIC_DNS:${SPARK_PUBLIC_DNS}'
         expose:
-            - ${SPARK_MASTER_WEBUI_PORT}
-            - ${SPARK_DRIVER_WEBUI_PORT}
+            - ${SPARK_APP_WEBUI_PORT}
+            - ${SPARK_MASTER_REST_PORT}
             - ${SPARK_MASTER_PORT}
+            - ${SPARK_MASTER_WEBUI_PORT}
+            - 8888
         hostname: ${SPARK_MASTER_HOST}
-        image: petersontylerd/spark-cluster:latest
+        image: petersontylerd/ubuntu-spark-cluster:latest
         networks:
             - spark-network
         ports:
+            - ${SPARK_APP_WEBUI_PORT}:${SPARK_APP_WEBUI_PORT}
+            - ${SPARK_MASTER_REST_PORT}:${SPARK_MASTER_REST_PORT}
             - ${SPARK_MASTER_PORT}:${SPARK_MASTER_PORT}
             - ${SPARK_MASTER_WEBUI_PORT}:${SPARK_MASTER_WEBUI_PORT}
-            - ${SPARK_DRIVER_WEBUI_PORT}:${SPARK_DRIVER_WEBUI_PORT}
+            - 8888:8888
         volumes:
-            - app_history:/${SPARK_HISTORY_DIR}
-            - ./conf/master:/conf
-            - ../:/home
+            - '../../spark_app_history:${SPARK_HISTORY_DIR}'
+            - './conf/master:${SPARK_CONF_DIR}'
+            - '../../:/home/workspace'
 
 
     spark-worker:
@@ -35,26 +41,27 @@ services:
         depends_on:
             - spark-master
         environment:
-            - SPARK_CONF_DIR=/conf
-        expose:
-            - ${SPARK_MASTER_WEBUI_PORT}
-        image: petersontylerd/spark-cluster:latest
+            - 'SPARK_CONF_DIR:${SPARK_CONF_DIR}'
+            - 'SPARK_PUBLIC_DNS:${SPARK_PUBLIC_DNS}'
+        # expose:
+        #     - ${SPARK_DRIVER_WEBUI_PORT}
+        image: petersontylerd/ubuntu-spark-cluster:latest
         networks:
             - spark-network
-        ports:
-            - ${SPARK_MASTER_WEBUI_PORT}
+        # ports:
+        #     - ${SPARK_DRIVER_WEBUI_PORT}:${SPARK_DRIVER_WEBUI_PORT}
         volumes:
-            - app_history:/${SPARK_HISTORY_DIR}
-            - ./conf/worker:/conf
-            - ../:/home
+            - '../../spark_app_history:${SPARK_HISTORY_DIR}'
+            - './conf/worker:${SPARK_CONF_DIR}'
+            - '../../:/home/workspace'
 
     spark-history:
         hostname: spark-history
         container_name: spark-history
-        image: petersontylerd/spark-cluster:latest
+        image: petersontylerd/ubuntu-spark-cluster:latest
         command: bash -c 'start-history-server.sh && tail -f /dev/null'
         environment:
-            - SPARK_CONF_DIR=/conf
+            - 'SPARK_CONF_DIR:${SPARK_CONF_DIR}'
         expose:
             - ${SPARK_HISTORY_WEBUI_PORT}
         networks:
@@ -62,9 +69,8 @@ services:
         ports:
             - ${SPARK_HISTORY_WEBUI_PORT}:${SPARK_HISTORY_WEBUI_PORT}
         volumes:
-            - app_history:/${SPARK_HISTORY_DIR}
-            - ./conf/history:/conf
+            - '../../spark_app_history:${SPARK_HISTORY_DIR}'
+            - './conf/history:${SPARK_CONF_DIR}'
 
 volumes:
     app_history:
-

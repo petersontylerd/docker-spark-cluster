@@ -1,4 +1,4 @@
-# debian & java base image
+# ubuntu base image
 FROM ubuntu:18.04
 
 ### ubuntu packages
@@ -11,6 +11,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y \
     git \
     gnupg-agent \
     htop \
+    jq \
     libbz2-dev \
     libffi-dev \
     libgdbm-compat-dev \
@@ -27,6 +28,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y \
     openssl \
     software-properties-common \
     ssh \
+    sudo \
     tar \
     tree \
     wget \
@@ -53,7 +55,7 @@ RUN rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 ENV SPARK_HOME="/usr/local/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7"
 ENV PATH $PATH:${SPARK_HOME}/bin:${SPARK_HOME}/sbin
 
-# RUN cp conf/log4j.properties.template conf/log4j.properties
+#RUN cp conf/log4j.properties.template conf/log4j.properties
 
 ### python
 RUN apt-get install -y python3 python3-pip
@@ -63,13 +65,12 @@ RUN update-alternatives --install "/usr/bin/python" "python" "$(which python3)" 
 
 # additional packages
 RUN pip3 install --upgrade pip setuptools
-WORKDIR /requirements/
-COPY requirements.txt /requirements
+WORKDIR /home/workspace/requirements/
+COPY requirements.txt /home/workspace/requirements/
 RUN pip3 install -r requirements.txt
 
 # set up ipython shell to start up with pyspark
-ENV PYSPARK_DRIVER_PYTHON=jupyter
-ENV PYSPARK_DRIVER_PYTHON_OPTS='notebook'
+ENV PYSPARK_DRIVER_PYTHON=ipython
 
 ### jupyter
 # enable extensions
@@ -80,8 +81,8 @@ RUN jupyter nbextension enable highlight_selected_word/main
 RUN jupyter nbextension enable collapsible_headings/main
 RUN jupyter nbextension enable codefolding/main
 
-# set theme
+# set jupyter notebook theme
 RUN jt -t monokai -f fira -fs 13 -nf ptsans -nfs 11 -N -kl -cursw 5 -cursc r -cellw 95% -T
 
-# reset working directory
-WORKDIR /workspace/
+# set working directory
+WORKDIR /home/workspace
