@@ -1,6 +1,10 @@
-ipython
-ipykernel
-matplotlib
-numpy
-pandas
-sklearn
+jupyter>=1.0.0
+jupyterthemes>=0.20.0
+jupyter_contrib_nbextensions
+matplotlib>=3.2.2
+numpy>=1.19.0
+pandas>=1.0.5
+pyspark>=3.0.0
+scikit-learn>=0.23.1
+scipy>=1.5.1
+seaborn>=0.10.1
